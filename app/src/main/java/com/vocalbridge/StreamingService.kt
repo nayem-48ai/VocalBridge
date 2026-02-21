@@ -13,13 +13,15 @@ import java.io.PipedOutputStream
 
 class StreamingService : Service() {
     private var server: AudioServer? = null
-    private var mediaProjection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
+    companion object {
+        var projection: MediaProjection? = null
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val channelId = "stream_channel"
         val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel(channelId, "Streaming", NotificationManager.IMPORTANCE_LOW))
+        manager?.createNotificationChannel(NotificationChannel(channelId, "Streaming", NotificationManager.IMPORTANCE_LOW))
 
         startForeground(1, NotificationCompat.Builder(this, channelId)
             .setContentTitle("VocalBridge Live")
@@ -37,41 +39,39 @@ class StreamingService : Service() {
             val pipedIn = PipedInputStream(pipedOut)
 
             Thread {
-                val bufferSize = 4096
-                val buffer = ByteArray(bufferSize)
-                
-                // Internal Audio Capture Configuration (Android 10+)
-                val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
-                    .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
-                
-                val format = AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(44100)
-                    .setChannelMask(AudioFormat.CHANNEL_IN_STEREO)
-                    .build()
+                try {
+                    val config = AudioPlaybackCaptureConfiguration.Builder(projection!!)
+                        .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                    
+                    val format = AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(44100)
+                        .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                        .build()
 
-                audioRecord = AudioRecord.Builder()
-                    .setAudioPlaybackCaptureConfig(config)
-                    .setAudioFormat(format)
-                    .build()
+                    audioRecord = AudioRecord.Builder()
+                        .setAudioPlaybackCaptureConfig(config)
+                        .setAudioFormat(format)
+                        .build()
 
-                audioRecord?.startRecording()
-                while (true) {
-                    val read = audioRecord?.read(buffer, 0, bufferSize) ?: 0
-                    if (read > 0) pipedOut.write(buffer, 0, read)
-                }
+                    audioRecord?.startRecording()
+                    val buffer = ByteArray(4096)
+                    while (true) {
+                        val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+                        if (read > 0) pipedOut.write(buffer, 0, read)
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
             }.start()
 
             return newChunkedResponse(Response.Status.OK, "audio/wav", pipedIn)
         }
     }
 
+    override fun onBind(intent: Intent?): IBinder? = null
     override fun onDestroy() {
         server?.stop()
         audioRecord?.stop()
         super.onDestroy()
     }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 }
