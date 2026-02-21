@@ -1,0 +1,48 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="VocalBridge Pro"
+        android:textColor="#38BDF8"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"/>
+
+    <TextView
+        android:id="@+id/urlText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:text="Server IP: http://0.0.0.0:8080"
+        android:textColor="#94A3B8"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp"
+        android:fontFamily="monospace"/>
+
+    <Button
+        android:id="@+id/btnToggle"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_centerInParent="true"
+        android:text="START STREAMING"
+        android:backgroundTint="#38BDF8"
+        android:textColor="#0F172A"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="BACKGOUND SERVICE ACTIVE"
+        android:textColor="#475569"
+        android:textSize="10sp"
+        android:letterSpacing="0.2"/>
+</RelativeLayout>
